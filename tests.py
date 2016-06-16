@@ -602,12 +602,12 @@ class DNSSECSignerTestCase(unittest.TestCase):
     def _diff(self, zone1, zone2):
         for name in zone1.nodes:
             if zone1.nodes[name] != zone2.nodes[name]:
-                print " ======> DIFFERENCE IN NODE", name 
+                print(" ======> DIFFERENCE IN NODE", name)
                 for rdataset in zone1.nodes[name]:
-                    print rdataset.to_text(name)
-                print "--------"
+                    print(rdataset.to_text(name))
+                print("--------")
                 for rdataset in zone2.nodes[name]:
-                    print rdataset.to_text(name)
+                    print(rdataset.to_text(name))
 
     def setUp(self):
         self.expiration = 1398843106
