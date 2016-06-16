@@ -888,6 +888,14 @@ class PrivateDNSKEY(dns.rdtypes.ANY.DNSKEY.DNSKEY):
 
         return cls(flags, algorithm, public, private, rdclass, rdtype,protocol)
 
+    @classmethod
+    def from_file(cls, flags, algorithm, privkey, rdclass=dns.rdataclass.IN,
+                  rdtype=dns.rdatatype.DNSKEY, protocol=3):
+        key = Crypto.PublicKey.RSA.importKey(privkey)
+        public = _rsa2dnskey(key)
+
+        return cls(flags, algorithm, public, privkey, rdclass, rdtype, protocol)
+
     def __init__(self, flags, algorithm, key, privkey=None,
                  rdclass=dns.rdataclass.IN, rdtype=dns.rdatatype.DNSKEY, 
                  protocol=3):
