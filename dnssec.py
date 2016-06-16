@@ -319,7 +319,7 @@ def _canonical_order(names, origin = None):
     
     if origin:
         names = [n.derelativize(origin) for n in names]
-    return sorted(names, cmp=labelCmp)
+    return sorted(names, key=labelCmp)
 
 
 def _hashed_order(names, origin=None, salt='', iterations=0):
@@ -836,9 +836,9 @@ def _rsa2dnskey(key):
     explen = int(math.ceil(math.log(key.e, 2)/8))
     if explen > 255:
         octets = "\x00"
-    octets += Crypto.Util.number.long_to_bytes(explen) + \
-              Crypto.Util.number.long_to_bytes(key.e) + \
-              Crypto.Util.number.long_to_bytes(key.n)
+    octets += Crypto.Util.number.long_to_bytes(explen).decode() + \
+              Crypto.Util.number.long_to_bytes(key.e).decode() + \
+              Crypto.Util.number.long_to_bytes(key.n).decode('ISO-8859-1')
     return octets
 
 
@@ -913,7 +913,7 @@ class PrivateDNSKEY(dns.rdtypes.ANY.DNSKEY.DNSKEY):
         Return original dns.rdtypes.ANY.DNSKEY.DNSKEY (without private key)
         """
         return dns.rdtypes.ANY.DNSKEY.DNSKEY(self.rdclass, self.rdtype,
-                    self.flags, self.protocol, self.algorithm, self.key)
+                    self.flags, self.protocol, self.algorithm, self.key.encode())
 
     def key_tag(self):
         """
