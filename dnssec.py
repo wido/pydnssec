@@ -24,7 +24,7 @@ import time
 import base64
 
 try:
-    from StringIO import StringIO
+    import cStringIO
 except ImportError:
     from io import StringIO
 
