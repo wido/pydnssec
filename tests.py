@@ -18,6 +18,7 @@
 """PyDNSSEC unit tests"""
 
 import unittest
+import base64
 import Crypto.Util.number
 import dns.name
 import dns.rdata
@@ -577,10 +578,10 @@ AZF/J3lb9bOtyhJRKLECQQCRAv6ZI1UqEb/AJWT4ho2yV8NedxYvrKsNudZKfd33
 /ahAiginomXoy5n8O2C6aTocjKm/hbSnYXZkonrZ/IqS
 -----END RSA PRIVATE KEY-----"""
 
-rsa_pub = "AwEAAbwPwkos3jZeAODOzW6AE0qf2ezpSEK6x7VAU2gMVTWAjN9IlkQAmxcNfB"\
+rsa_pub = base64.b64decode("AwEAAbwPwkos3jZeAODOzW6AE0qf2ezpSEK6x7VAU2gMVTWAjN9IlkQAmxcNfB"\
           "BFy9ny4o/8kZTTWyw7pyALzNx9jxhrnwiIdoWR/7N0Qq1Ia/CWfszWjlXvzDEw"\
           "wkM/Qs41/8evCEShJBuk17wMJKmuHkAPoEgUcN4"\
-          "v0tnB892Aeq0v".decode('base64')
+          "v0tnB892Aeq0v")
 # }}}
 
 ### }}}
