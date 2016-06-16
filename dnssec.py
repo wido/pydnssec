@@ -881,7 +881,7 @@ class PrivateDNSKEY(dns.rdtypes.ANY.DNSKEY.DNSKEY):
         Generate a new DNSKEY keypair
         """
         if _is_rsa(algorithm):
-            if not isinstance(bits, (int, long)):
+            if not isinstance(bits, int):
                 raise ValidationFailure("For RSA key generation, key size in "
                                         "bits must be provided")
             key = Crypto.PublicKey.RSA.generate(bits)
