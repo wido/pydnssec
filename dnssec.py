@@ -17,12 +17,16 @@
 
 """DNSSEC toolkit"""
 
-import cStringIO
 import os
 import math
 import struct
 import time
 import base64
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 import Crypto.PublicKey.RSA
 import Crypto.PublicKey.DSA
