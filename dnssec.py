@@ -52,9 +52,11 @@ class UnsupportedAlgorithm(dns.exception.DNSException):
     """Raised if an algorithm is not supported."""
     pass
 
+
 class ValidationFailure(dns.exception.DNSException):
     """The DNSSEC signature is invalid."""
     pass
+
 
 class NSEC3Collision(dns.exception.DNSException):
     """Collision was detected in hashed owner names."""
@@ -112,6 +114,7 @@ _algorithm_by_text = {
 
 _algorithm_by_value = dict([(y, x) for x, y in _algorithm_by_text.items()])
 
+
 def algorithm_from_text(text):
     """Convert text into a DNSSEC algorithm value
     @rtype: int"""
@@ -120,6 +123,7 @@ def algorithm_from_text(text):
     if value is None:
         value = int(text)
     return value
+
 
 def algorithm_to_text(value):
     """Convert a DNSSEC algorithm value to text
@@ -130,24 +134,31 @@ def algorithm_to_text(value):
         text = str(value)
     return text
 
+
 def _is_rsa(algorithm):
     return algorithm in (RSASHA1, RSASHA1NSEC3SHA1, RSASHA256, RSASHA512)
 
+
 def _is_dsa(algorithm):
     return algorithm in (DSA, DSANSEC3SHA1)
+
 
 def _is_sha1(algorithm):
     return algorithm in (DSA, RSASHA1,
                          DSANSEC3SHA1, RSASHA1NSEC3SHA1)
 
+
 def _is_sha256(algorithm):
     return algorithm == RSASHA256
+
 
 def _is_sha384(algorithm):
     return algorithm == ECDSAP384SHA384
 
+
 def _is_sha512(algorithm):
     return algorithm == RSASHA512
+
 
 def _rsa2dnskey(key):
     """
@@ -171,7 +182,7 @@ def _dnskey2rsa(keyptr):
         keyptr = keyptr[2:]
     rsa_e = keyptr[0:b] 
     rsa_n = keyptr[b:]
-    return (rsa_e, rsa_n)
+    return rsa_e, rsa_n
 
 _file_privkey_rsa = \
 """Private-key-format: v1.2
@@ -185,6 +196,7 @@ Exponent1: %(dmp1)s
 Exponent2: %(dmq1)s
 Coefficient: %(u)s
 """
+
 
 class PrivateDNSKEY(dns.rdtypes.ANY.DNSKEY.DNSKEY):
     """
@@ -235,14 +247,6 @@ class PrivateDNSKEY(dns.rdtypes.ANY.DNSKEY.DNSKEY):
         """
         return dns.rdtypes.ANY.DNSKEY.DNSKEY(self.rdclass, self.rdtype,
                     self.flags, self.protocol, self.algorithm, self.key.encode())
-
-    def key_tag(self):
-        """
-        Get the key tag of this key (For details, see RFC 2535, section 4.1.6)
-        """
-        if self._tag is None:
-            self._tag = key_id(self)
-        return self._tag
 
     def bits(self):
         """
