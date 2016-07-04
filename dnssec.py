@@ -1,27 +1,6 @@
-# PyDNSSEC - DNSSEC toolkit
-# Copyright (C) 2013 Tomas Mazak
-# (based on dnssec module from dnspython package)
-# 
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-"""DNSSEC toolkit"""
-
 import math
 import struct
 import base64
-
-from io import StringIO
 
 import Crypto.PublicKey.RSA
 import Crypto.PublicKey.DSA
@@ -49,22 +28,17 @@ import dns.rdtypes.ANY.NSEC3PARAM
 
 
 class UnsupportedAlgorithm(dns.exception.DNSException):
-    """Raised if an algorithm is not supported."""
     pass
 
 
 class ValidationFailure(dns.exception.DNSException):
-    """The DNSSEC signature is invalid."""
     pass
 
 
 class NSEC3Collision(dns.exception.DNSException):
-    """Collision was detected in hashed owner names."""
     pass
 
-# DNSSEC algorithm numbers, according to IANA authority
-# http://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xml
-RSAMD5 = 1 # deprecated
+RSAMD5 = 1
 DH = 2
 DSA = 3
 RSASHA1 = 5
@@ -79,46 +53,36 @@ INDIRECT = 252
 PRIVATEDNS = 253
 PRIVATEOID = 254
 
-# DNSKEY flags
 DNSKEY_FLAG_NONE = 0
 DNSKEY_FLAG_ZONEKEY = 256
-DNSKEY_FLAG_SEP = 1 # Secure entry point
+DNSKEY_FLAG_SEP = 1
 
-# NSEC3 parameters according to IANA authority:
-# http://www.iana.org/assignments/dnssec-nsec3-parameters/dnssec-nsec3-parameters.xml
 NSEC3_ALG_SHA1 = 1
 NSEC3_FLAG_NONE = 0
 NSEC3_FLAG_OPTOUT = 1
 
 
 _algorithm_by_text = {
-    'RSAMD5' : RSAMD5, 
-    'DH' : DH,
-    'DSA' : DSA,
-    'RSASHA1' : RSASHA1,
-    'DSANSEC3SHA1' : DSANSEC3SHA1,
-    'RSASHA1NSEC3SHA1' : RSASHA1NSEC3SHA1,
-    'RSASHA256' : RSASHA256,
-    'RSASHA512' : RSASHA512,
-    'ECCGOST' : ECCGOST,
-    'ECDSAP256SHA256' : ECDSAP256SHA256,
-    'ECDSAP384SHA384' : ECDSAP384SHA384,
-    'INDIRECT' : INDIRECT,
-    'PRIVATEDNS' : PRIVATEDNS,
-    'PRIVATEOID' : PRIVATEOID,
-    }
-
-# We construct the inverse mapping programmatically to ensure that we
-# cannot make any mistakes (e.g. omissions, cut-and-paste errors) that
-# would cause the mapping not to be true inverse.
+    'RSAMD5': RSAMD5,
+    'DH': DH,
+    'DSA': DSA,
+    'RSASHA1': RSASHA1,
+    'DSANSEC3SHA1': DSANSEC3SHA1,
+    'RSASHA1NSEC3SHA1': RSASHA1NSEC3SHA1,
+    'RSASHA256': RSASHA256,
+    'RSASHA512': RSASHA512,
+    'ECCGOST': ECCGOST,
+    'ECDSAP256SHA256': ECDSAP256SHA256,
+    'ECDSAP384SHA384': ECDSAP384SHA384,
+    'INDIRECT': INDIRECT,
+    'PRIVATEDNS': PRIVATEDNS,
+    'PRIVATEOID': PRIVATEOID,
+}
 
 _algorithm_by_value = dict([(y, x) for x, y in _algorithm_by_text.items()])
 
 
 def algorithm_from_text(text):
-    """Convert text into a DNSSEC algorithm value
-    @rtype: int"""
-
     value = _algorithm_by_text.get(text.upper())
     if value is None:
         value = int(text)
@@ -126,9 +90,6 @@ def algorithm_from_text(text):
 
 
 def algorithm_to_text(value):
-    """Convert a DNSSEC algorithm value to text
-    @rtype: string"""
-
     text = _algorithm_by_value.get(value)
     if text is None:
         text = str(value)
@@ -161,9 +122,6 @@ def _is_sha512(algorithm):
 
 
 def _rsa2dnskey(key):
-    """
-    Get RSA public key in DNSKEY resource record format (RFC-3110)
-    """
     octets = ''
     explen = int(math.ceil(math.log(key.e, 2)/8))
     if explen > 255:
@@ -199,20 +157,9 @@ Coefficient: %(u)s
 
 
 class PrivateDNSKEY(dns.rdtypes.ANY.DNSKEY.DNSKEY):
-    """
-    Adds a private key field and methods to DNSKEY. Used for signature
-    creation.
-
-    @ivar privkey: the private key 
-    @type flags: string
-    """
-    
     @classmethod
     def generate(cls, flags, algorithm, bits=None, rdclass=dns.rdataclass.IN,
                  rdtype=dns.rdatatype.DNSKEY, protocol=3):
-        """
-        Generate a new DNSKEY keypair
-        """
         if _is_rsa(algorithm):
             if not isinstance(bits, int):
                 raise ValidationFailure("For RSA key generation, key size in "
@@ -242,26 +189,18 @@ class PrivateDNSKEY(dns.rdtypes.ANY.DNSKEY.DNSKEY):
         self._tag = None
 
     def get_pubkey(self):
-        """
-        Return original dns.rdtypes.ANY.DNSKEY.DNSKEY (without private key)
-        """
         return dns.rdtypes.ANY.DNSKEY.DNSKEY(self.rdclass, self.rdtype,
-                    self.flags, self.protocol, self.algorithm, self.key.encode())
+                                             self.flags, self.protocol,
+                                             self.algorithm, self.key.encode())
 
     def bits(self):
-        """
-        Get the size of this key in bits.
-        """
-        if _is_rsa(self.algorithm): 
-            (rsa_e,rsa_n) = _dnskey2rsa(self.key)
+        if _is_rsa(self.algorithm):
+            rsa_e, rsa_n = _dnskey2rsa(self.key)
             return len(rsa_n)*8
         else:
             raise ValidationFailure("Unknown algorithm %d" % self.algorithm)
 
     def __str__(self):
-        """
-        Export this key to a private key file compatible with bind tools
-        """
         if not _is_rsa(self.algorithm):
             raise ValidationFailure("Unknown algorithm %d" % self.algorithm)
 
@@ -273,6 +212,7 @@ class PrivateDNSKEY(dns.rdtypes.ANY.DNSKEY.DNSKEY):
             f = getattr(key, field)
             f = Crypto.Util.number.long_to_bytes(f)
             keydata[field] = base64.b64encode(f).decode()
+
         dmp1 = Crypto.Util.number.long_to_bytes(key.d % (key.p - 1))
         keydata['dmp1'] = base64.b64encode(dmp1).decode()
         dmq1 = Crypto.Util.number.long_to_bytes(key.d % (key.p - 1))
